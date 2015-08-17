@@ -1,0 +1,7 @@
+M1	M1_run0	/groups/sorger/Marc/RNAseq_data/DrugPerturb_July2015/M1_N701_run0_R1.fastq.gz	/groups/sorger/Marc/RNAseq_data/DrugPerturb_July2015/M1_N701_run0_R2.fastq.gz
+M1	M1_run1	/groups/sorger/Marc/RNAseq_data/DrugPerturb_July2015/M1_N701_run1_R1.fastq.gz	/groups/sorger/Marc/RNAseq_data/DrugPerturb_July2015/M1_N701_run1_R2.fastq.gz
+M2	M2_run0	/groups/sorger/Marc/RNAseq_data/DrugPerturb_July2015/M2_N702_run0_R1.fastq.gz	/groups/sorger/Marc/RNAseq_data/DrugPerturb_July2015/M2_N702_run0_R2.fastq.gz
+M5	M5_run0	/groups/sorger/Marc/RNAseq_data/DrugPerturb_July2015/M5_N703_run0_R1.fastq.gz	/groups/sorger/Marc/RNAseq_data/DrugPerturb_July2015/M5_N703_run0_R2.fastq.gz
+M6	M6_run0	/groups/sorger/Marc/RNAseq_data/DrugPerturb_July2015/M6_N704_run0_R1.fastq.gz	/groups/sorger/Marc/RNAseq_data/DrugPerturb_July2015/M6_N704_run0_R2.fastq.gz
+M9	M9_run0	/groups/sorger/Marc/RNAseq_data/DrugPerturb_July2015/M9_N705_run0_R1.fastq.gz	/groups/sorger/Marc/RNAseq_data/DrugPerturb_July2015/M9_N705_run0_R2.fastq.gz
+M12	M12_run0	/groups/sorger/Marc/RNAseq_data/DrugPerturb_July2015/M12_N706_run0_R1.fastq.gz	/groups/sorger/Marc/RNAseq_data/DrugPerturb_July2015/M12_N706_run0_R2.fastq.gz
