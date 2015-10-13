@@ -31,7 +31,7 @@ dge_dir = args.analysis_dir
 loose_barcodes = str(args.loose_barcodes)
 cleanup = args.cleanup
 
-pythoncmd = '/opt/python-2.7.6/bin/python';
+pythoncmd = 'python';
 
 sbatch_queue = "long"
 short_queue = "short"

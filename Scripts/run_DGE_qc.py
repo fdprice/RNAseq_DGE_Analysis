@@ -23,7 +23,7 @@ if not os.path.exists(qc_dir):
 
 # make FastQC cmds
 def qc_cmd(r_path, qc_dir):
-	return " ".join(["/cil/shed/apps/external/LibraryQC/FastQC/fastqc -f fastq -o", qc_dir, r_path])
+	return " ".join(["fastqc -f fastq -o", qc_dir, r_path])
 
 cmd_list = list()
 with open(sample_map_filename, "rU") as sample_map:
