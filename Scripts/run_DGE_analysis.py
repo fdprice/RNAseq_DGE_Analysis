@@ -16,8 +16,8 @@ parser.add_argument('reference', help='reference genome: Human|Mouse|Rat|Chicken
 parser.add_argument('barcodes', help='barcode plate: P1|P2||P3|P1P2|Trugrade_384_set1|Trugrade_96_set1|Trugrade_96_set2|Trugrade_96_set3|Trugrade_96_set4|Truegrade_96_1234', type=str)
 parser.add_argument('alignment_dir', help='directory to process alignments', type=str)
 parser.add_argument('analysis_dir', help='directory to calculate gene expression', type=str)
-parser.add_argument('--short_slurm_queue', help='slurm_queue to run short jobs. default=hour', type=str)
-parser.add_argument('--long_slurm_queue', help='slurm_queue to run long jobs. default=forest', type=str)
+parser.add_argument('--short_slurm_queue', help='slurm_queue to run short jobs. default=short', type=str)
+parser.add_argument('--long_slurm_queue', help='slurm_queue to run long jobs. default=long', type=str)
 parser.add_argument('--loose_barcodes', help='allows well barcodes to have 1 mismatch', action='store_true')
 parser.add_argument('--cleanup', help='removes resulting fq and sam files upon successful completion', action='store_true') 
 
@@ -33,8 +33,8 @@ cleanup = args.cleanup
 
 pythoncmd = '/opt/python-2.7.6/bin/python';
 
-sbatch_queue = "forest"
-short_queue = "hour"
+sbatch_queue = "long"
+short_queue = "short"
 
 if args.short_slurm_queue:
 	short_queue = args.short_slurm_queue
@@ -100,7 +100,7 @@ barcodes = barcodes[barcode_plate]
 
 ## run split and align
 
-# Contructcommand for split_and_align job
+# Construct command for split_and_align job
 def sa_cmd(sample_id, subsample_id, r1_path, r2_path, alignment_dir, reference_prefix, short_queue):
 	split_call = "".join([bindir, "/split_and_align2.py"])
 	return " ".join([pythoncmd, split_call, sample_id, subsample_id, r1_path, r2_path, alignment_dir, reference_prefix, short_queue])
@@ -132,7 +132,7 @@ with open(sample_map_filename, "rU") as sample_map:
         cmd_list.append(sa_cmd(sample_id, subsample_id, r1_path, r2_path, alignment_dir, reference_prefix, short_queue))
 
 controller = SbatchController.SbatchController(cmd_list, queue=sbatch_queue, memory=sbatch_memreq, cmds_per_node=1, see=True) # , mount_test=alignment_dir) ### removed mount_test as argument
-controller.run_slrum_submission()
+controller.run_slurm_submission()
 
 failed_cmds = controller.get_failed_cmds()
 if failed_cmds:

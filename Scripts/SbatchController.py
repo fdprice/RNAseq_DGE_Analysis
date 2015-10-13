@@ -178,8 +178,10 @@ class SbatchController:
 		if self.memory:
 			cmd = cmd + ' --mem ' + str(self.memory*1024)
 		
-		if self.queue == 'hour':
-				cmd = cmd + ' -t 0-04:00'
+		if self.queue == 'short':
+				cmd = cmd + ' -t 0-06:00'
+		if self.queue == 'long':
+				cmd = cmd + ' -t 0-12:00'
 				
 		#if self.project:
 		#	cmd = cmd + ' -P ' + self.project
