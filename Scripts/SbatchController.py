@@ -1,16 +1,16 @@
-# python LSF controllers
+# python SLURM controllers
 # based on Brian Haas' perl grid submission tools
 
 import random, time
 import os, sys, socket, subprocess, re
 
-class BsubController:
+class SbatchController:
 	"""
 	To initialize an instance of the class:
-	test_controller = BsubController.BsubController(test_cmd_list, ...)
+	test_controller = SbatchController.SbatchController(test_cmd_list, ...)
 	
 	To run commands on the grid using that instance:
-	test_controller.run_lsf_submission()
+	test_controller.run_slurm_submission()
 	
 	To get failed commands upon completion (retuns a list of tuples (command,job_id,return_value), no failed commands returns an empty list):
 	test_controller.get_failed_cmds()
@@ -19,7 +19,7 @@ class BsubController:
 	test_controller.clean_logs()
 	
 	"""
-	def __init__(self, command_list, queue = 'hour', cmds_per_node = 50, memory = False, mount_test = False, max_nodes=250, see = False, project = False):
+	def __init__(self, command_list, queue = 'serial_requeue', cmds_per_node = 50, memory = False, mount_test = False, max_nodes=250, see = False, project = False):
 		self.command_list = command_list
 		self.queue = queue
 		self.cmds_per_node = cmds_per_node
@@ -44,7 +44,7 @@ class BsubController:
 		## make log directory
 		
 		self.log_id = str(random.randrange(10000000,100000000))
-		self.log_dir_name = 'bsub.' + self.log_id
+		self.log_dir_name = 'sbatch.' + self.log_id
 		if os.path.exists(self.log_dir_name):
 			log_except_str = 'log_dir ' + self.log_dir_name + ' already exists'
 			raise Exception(log_except_str)
@@ -80,7 +80,7 @@ class BsubController:
 		file.write(str(os.getpid()))
 		file.close()
 		
-	def run_lsf_submission(self):
+	def run_slurm_submission(self):
 		self.write_pid_file()
 
 		while self.num_cmds_launched < self.num_cmds:
@@ -170,22 +170,22 @@ class BsubController:
 		os.chmod(shell_script, 0775)
 		
 		if self.see:
-			print('Submitting ' + shell_script + ' to bsub')
+			print('Submitting ' + shell_script + ' to sbatch')
 			
 		script_basename = os.path.basename(shell_script)
-		cmd = 'bsub -q ' + self.queue + ' -e ' + shell_script + '.stderr -o ' + shell_script + '.stdout'
+		cmd = 'sbatch -p ' + self.queue + ' -e ' + shell_script + '.stderr -o ' + shell_script + '.stdout' ***
 
 		if self.memory:
-			cmd = cmd + ' -R \"rusage[mem=' + str(self.memory*1024) + ']\"'
+			cmd = cmd + ' --mem ' + str(self.memory*1024)
 		
 		if self.queue == 'hour':
-				cmd = cmd + ' -W 4:0'
+				cmd = cmd + ' -t 0-04:00'
 				
-		if self.project:
-			cmd = cmd + ' -P ' + self.project
+		#if self.project:
+		#	cmd = cmd + ' -P ' + self.project
 			
-		if self.mount_test:
-			cmd = cmd + ' -E \"/broad/tools/NoArch/pkgs/local/checkmount ' + self.mount_test + ' && [ -e ' + self.mount_test + ' ]\"'
+		#if self.mount_test:
+		#	cmd = cmd + ' -E \"/broad/tools/NoArch/pkgs/local/checkmount ' + self.mount_test + ' && [ -e ' + self.mount_test + ' ]\"'
 		
 		cmd = cmd + ' ' + shell_script + ' 2>&1'
 		
@@ -198,14 +198,14 @@ class BsubController:
  		submission_return = process.returncode
  		
  		if submission_return:
- 			print('BSUB failed to accept job: ' + cmd + '\n (ret ' + str(submission_return) + ')\n')
+ 			print('sbatch failed to accept job: ' + cmd + '\n (ret ' + str(submission_return) + ')\n')
  			os.unlink(shell_script) # cleanup, try again later
  			time.sleep(120) # sleep 2 minutes for now.  Give the system time to recuperate if a problem exists
  			return orig_num_cmds_launched
  		else:
  			shell_script = os.path.basename(shell_script)
  			file = open((self.log_dir_name + '/job_ids.txt'), 'a')
- 			job_pattern = re.compile(r'Job \<(\d+)\>')
+ 			job_pattern = re.compile(r'Submitted batch job (\d+)')          # Submitted batch job 49617564
  			matched = job_pattern.search(submission_out)
  			if matched:
  				job_id = matched.group(1)
@@ -290,7 +290,7 @@ class BsubController:
 
 		attempts = 0		
 		while attempts < 5:
-			cmd = 'bjobs ' + str(job_id)
+			cmd = 'sacct -j ' + str(job_id)
 			process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
 			submission_out = process.communicate()[0]
 			submission_return = process.returncode
@@ -300,15 +300,15 @@ class BsubController:
 				for split_out_line in split_out:
 					split_out2 = split_out_line.split()
 					if split_out2[0] == job_id:
-						state = split_out2[2]
-						if state == 'DONE' or state == 'EXIT' or state == 'UNKWN' or state == 'ZOMBI':
+						state = split_out2[5]
+						if state == 'COMPLETED' or state == 'FAILED' or state == 'CANCELLED' or state == 'TIMEOUT':
 							return 0
 						else:
 							self.job_id_to_submission_time[job_id] = int(time.time())
 							return state
 							
 			attempts = attempts + 1
-			time.sleep(15)
+			time.sleep(120)
  					
 		print('No record of job_id ' + str(job_id) + ', setting as state unknown\n')
 		return 0 ## Brian returns that as unknown, but it results in the same as UNKWN
@@ -331,7 +331,7 @@ class BsubController:
 		if num_failures == 0 and num_unknown == 0:
 			status = 'success'
 		
-		file = open((self.log_dir_name + '/bsub.finished.' + status), 'a')
+		file = open((self.log_dir_name + '/sbatch.finished.' + status), 'a')
 		file.write('num_successes: ' + str(num_successes) + '\n')
 		file.write('num_failures: ' + str(num_failures) + '\n')
 		file.write('num_unknown: ' + str(num_unknown) + '\n')
