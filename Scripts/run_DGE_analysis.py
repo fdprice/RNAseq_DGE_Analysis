@@ -2,7 +2,7 @@ from __future__ import print_function
 import os
 import os.path
 import sys
-import BsubController
+import SbatchController
 import argparse
 import time
 
@@ -16,8 +16,8 @@ parser.add_argument('reference', help='reference genome: Human|Mouse|Rat|Chicken
 parser.add_argument('barcodes', help='barcode plate: P1|P2||P3|P1P2|Trugrade_384_set1|Trugrade_96_set1|Trugrade_96_set2|Trugrade_96_set3|Trugrade_96_set4|Truegrade_96_1234', type=str)
 parser.add_argument('alignment_dir', help='directory to process alignments', type=str)
 parser.add_argument('analysis_dir', help='directory to calculate gene expression', type=str)
-parser.add_argument('--short_lsf_queue', help='lsf_queue to run short jobs. default=hour', type=str)
-parser.add_argument('--long_lsf_queue', help='lsf_queue to run long jobs. default=forest', type=str)
+parser.add_argument('--short_slurm_queue', help='slurm_queue to run short jobs. default=hour', type=str)
+parser.add_argument('--long_slurm_queue', help='slurm_queue to run long jobs. default=forest', type=str)
 parser.add_argument('--loose_barcodes', help='allows well barcodes to have 1 mismatch', action='store_true')
 parser.add_argument('--cleanup', help='removes resulting fq and sam files upon successful completion', action='store_true') 
 
@@ -33,15 +33,15 @@ cleanup = args.cleanup
 
 pythoncmd = '/opt/python-2.7.6/bin/python';
 
-bsub_queue = "forest"
+sbatch_queue = "forest"
 short_queue = "hour"
 
-if args.short_lsf_queue:
-	short_queue = args.short_lsf_queue
-if args.long_lsf_queue:
-	bsub_queue = args.long_lsf_queue
+if args.short_slurm_queue:
+	short_queue = args.short_slurm_queue
+if args.long_slurm_queue:
+	sbatch_queue = args.long_slurm_queue
 
-bsub_memreq = 32		################# previously 4
+sbatch_memreq = 32		################# previously 4
 
 bindir = os.path.abspath(os.path.dirname(sys.argv[0]))		# locate scripts directory
 reference_dir =  os.path.join(bindir, "../Reference")		# locate "Reference" dir relative to scripts dir 
@@ -131,8 +131,8 @@ with open(sample_map_filename, "rU") as sample_map:
         r2_path = os.path.join(os.path.dirname(sample_map_filename), r2_filename)
         cmd_list.append(sa_cmd(sample_id, subsample_id, r1_path, r2_path, alignment_dir, reference_prefix, short_queue))
 
-controller = BsubController.BsubController(cmd_list, queue=bsub_queue, memory=bsub_memreq, cmds_per_node=1, see=True) # , mount_test=alignment_dir) ### removed mount_test as argument
-controller.run_lsf_submission()
+controller = SbatchController.SbatchController(cmd_list, queue=sbatch_queue, memory=sbatch_memreq, cmds_per_node=1, see=True) # , mount_test=alignment_dir) ### removed mount_test as argument
+controller.run_slrum_submission()
 
 failed_cmds = controller.get_failed_cmds()
 if failed_cmds:
@@ -146,12 +146,12 @@ controller.clean_logs()
 
 ## run merge and count
 
-bsub_memreq = 80   ################# previously 8
+sbatch_memreq = 80   ################# previously 8
 
 
 ## Helpers
 
-# Contruct LSF bsub command for merge_and_count job
+# Contruct slurm sbatch command for merge_and_count job
 def mc_cmd(sample_id, sym2ref, ercc_fasta, barcodes, alignment_dir, dge_dir, loose_barcodes):
 	merge_call = "".join([bindir, "/merge_and_count.py"])
 	return " ".join([pythoncmd, merge_call, sample_id, sym2ref, ercc_fasta, barcodes, alignment_dir, dge_dir, loose_barcodes])
@@ -162,8 +162,8 @@ with open(sample_map_filename, "rU") as sm_file:
     for sample_id in set([line.split()[0] for line in sm_file]):
         merge_cmd_list.append(mc_cmd(sample_id, sym2ref, ercc_fasta, barcodes, alignment_dir, dge_dir, loose_barcodes))
 
-controller2 = BsubController.BsubController(merge_cmd_list, queue=bsub_queue, memory=bsub_memreq, cmds_per_node=1) # , mount_test=dge_dir)  ### removed mount_test as argument
-controller2.run_lsf_submission()
+controller2 = SbatchController.SbatchController(merge_cmd_list, queue=sbatch_queue, memory=sbatch_memreq, cmds_per_node=1) # , mount_test=dge_dir)  ### removed mount_test as argument
+controller2.run_slurm_submission()
 
 failed_cmds = controller2.get_failed_cmds()
 success = False

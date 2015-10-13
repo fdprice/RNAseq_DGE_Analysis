@@ -4,12 +4,12 @@ import os.path
 import sys
 import gzip
 import itertools
-import BsubController
+import SbatchController
 
 ## Parameters
 
 
-bsub_memreq = 8 ####
+sbatch_memreq = 8 ####
 bwa_aln_flags = "-l 24"
 batch_size = 5000000
 r1_length = 16
@@ -29,32 +29,32 @@ def open_fastq_or_gz(filename):
         return open(filename[:-3], "rU")
     raise IOError, "Unknown file: " + filename
 
-# Contruct LSF bsub command for BWA alignment job
-# def bsub_bwa_cmd(fastq_path, reference_prefix, alignment_dir):
-#     return " ".join(["bsub", "-q", bsub_queue, "-o",  os.path.join(alignment_dir, "bwa.bsub"), "-J bwa", \
-#                     "-R", bsub_memreq, "-R", bsub_ioreq, \
+# Contruct slurm sbatch command for BWA alignment job
+# def sbatch_bwa_cmd(fastq_path, reference_prefix, alignment_dir):
+#     return " ".join(["sbatch", "-q", sbatch_queue, "-o",  os.path.join(alignment_dir, "bwa.sbatch"), "-J bwa", \
+#                     "-R", sbatch_memreq, "-R", sbatch_ioreq, \
 #                     "\"bwa aln", bwa_aln_flags, reference_prefix, fastq_path, "|", "bwa samse", \
 #                     reference_prefix, "-", fastq_path, ">", ".".join([fastq_path, "sam"]) + "\""])
                     
-def bwa_cmd(fastq_path, reference_prefix, alignment_dir):  ## separated bwa from bsub
+def bwa_cmd(fastq_path, reference_prefix, alignment_dir):  ## separated bwa from sbatch
     return " ".join(["bwa aln", bwa_aln_flags, reference_prefix, fastq_path, "|", "bwa samse -n 20", \
                     reference_prefix, "-", fastq_path, ">", ".".join([fastq_path, "sam"])])
 
 
-# Write fastq batch and submit BWA alignment job to LSF
+# Write fastq batch and submit BWA alignment job to slurm
 # def write_fastq_and_align(alignment_dir, sample_id, subsample_id, read_count, name_seq_qual_list, reference_prefix):
 #     fastq_path = os.path.join(alignment_dir, ".".join([sample_id, subsample_id, str(read_count), "fastq"]))
 #     with open(fastq_path, "w") as out:
 #         for name, seq, qual in name_seq_qual_list:
 #             print("\n".join(["@" + name, seq, "+", qual]), file=out)
-#     os.system(bsub_bwa_cmd(fastq_path, reference_prefix, alignment_dir))
+#     os.system(sbatch_bwa_cmd(fastq_path, reference_prefix, alignment_dir))
 
 def write_fastq_and_return_align_cmd(alignment_dir, sample_id, subsample_id, read_count, name_seq_qual_list, reference_prefix):
     fastq_path = os.path.join(alignment_dir, ".".join([sample_id, subsample_id, str(read_count), "fastq"]))
     with open(fastq_path, "w") as out:
         for name, seq, qual in name_seq_qual_list:
             print("\n".join(["@" + name, seq, "+", qual]), file=out)
-    #os.system(bsub_bwa_cmd(fastq_path, reference_prefix, alignment_dir))   
+    #os.system(sbatch_bwa_cmd(fastq_path, reference_prefix, alignment_dir))   
     return bwa_cmd(fastq_path, reference_prefix, alignment_dir)
 
 # Mask sequence by quality score
@@ -66,13 +66,13 @@ def mask(seq, qual, min_qual=10):
 # Parse command line parameters
 if len(sys.argv) != 8:
     print("Usage: python " + sys.argv[0] + " <sample id> <subsample id> <read1 .fastq or .fastq.gz> " +\
-            "<read2 fastq or .fastq.gz> <alignment dir> <reference prefix> <bsub_queue>",file=sys.stderr)
+            "<read2 fastq or .fastq.gz> <alignment dir> <reference prefix> <sbatch_queue>",file=sys.stderr)
     sys.exit()
 
-sample_id, subsample_id, r1_fastq, r2_fastq, alignment_dir, reference_prefix, bsub_queue = sys.argv[1:]
+sample_id, subsample_id, r1_fastq, r2_fastq, alignment_dir, reference_prefix, sbatch_queue = sys.argv[1:]
 
 # Read through R1 and R2 fastq files in parallel, add R1 barcode to R2 name, and launch batched
-# BWA alignments via LSF with output written to alignment_dir
+# BWA alignments via slurm with output written to alignment_dir
 with open_fastq_or_gz(r1_fastq) as r1_file, open_fastq_or_gz(r2_fastq) as r2_file:
     read_count = 0
     buf = list()
@@ -101,9 +101,9 @@ with open_fastq_or_gz(r1_fastq) as r1_file, open_fastq_or_gz(r2_fastq) as r2_fil
     	cmd_to_add = write_fastq_and_return_align_cmd(alignment_dir, sample_id, subsample_id, read_count, buf, reference_prefix)
     	cmd_list.append(cmd_to_add)
 		
-    controller = BsubController.BsubController(cmd_list, queue=bsub_queue, memory=bsub_memreq, cmds_per_node=1) # , mount_test=alignment_dir) ### removed mount_test as argument
+    controller = SbatchController.SbatchController(cmd_list, queue=sbatch_queue, memory=sbatch_memreq, cmds_per_node=1) # , mount_test=alignment_dir) ### removed mount_test as argument
 
-    controller.run_lsf_submission()
+    controller.run_slurm_submission()
 
     failed_cmds = controller.get_failed_cmds()
     if failed_cmds:

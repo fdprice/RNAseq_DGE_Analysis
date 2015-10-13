@@ -4,10 +4,10 @@ import os.path
 import sys
 import gzip
 import itertools
-import BsubController
+import SbatchController
 import subprocess
 
-bsub_memreq = 8
+sbatch_memreq = 8
 
 # Parse command line parameters
 if len(sys.argv) != 3:
@@ -35,8 +35,8 @@ with open(sample_map_filename, "rU") as sample_map:
        
 #print(cmd_list)
 
-controller = BsubController.BsubController(cmd_list, memory=bsub_memreq, cmds_per_node=1, mount_test=qc_dir)
-controller.run_lsf_submission()
+controller = SbatchController.SbatchController(cmd_list, memory=sbatch_memreq, cmds_per_node=1, mount_test=qc_dir)
+controller.run_slurm_submission()
 
 failed_cmds = controller.get_failed_cmds()
 if failed_cmds:
