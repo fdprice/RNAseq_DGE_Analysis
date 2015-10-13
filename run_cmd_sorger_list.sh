@@ -2,7 +2,7 @@
 # guarantee our consisten defaults
 source new-modules.sh
 module load python/2.7.6-fasrc01 
-module load bwa/0.7.9a-fasrc02
+module load bwa/0.7.9a-fasrc01
 module load fastqc/0.11.3-fasrc01
 module load samtools/1.2-fasrc01
 
