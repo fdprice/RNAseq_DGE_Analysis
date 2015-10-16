@@ -21,12 +21,12 @@ module load samtools/1.2-fasrc01
 source activate PYTHON_DGE
 
 # template script. Assumes this script will be in run directory
-python $HOME/git/RNAseq_DGE_Analysis/run_DGE_analysis.py \
+python $HOME/git/RNAseq_DGE_Analysis/Scripts/run_DGE_analysis.py \
    --short_slurm_queue "short" --long_slurm_queue "long" \
    --loose_barcodes --cleanup \
    sample_map.txt \
-   Human \
+   Mouse \
    Trugrade_384_set1 \
-   /n/regal/rubin_lab/fprice/DGE_processing/Alignment \
-   DGE_OCT15
+   ./Alignment \
+   ./DGE_OCT15
 
