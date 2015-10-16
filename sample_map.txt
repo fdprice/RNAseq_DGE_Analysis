@@ -2,4 +2,4 @@ M1 M1_run0 /n/regal/rubin_lab/fprice/Rundir/TCl_Plate1_r1/All_Reads/Fastq/TCL_Pl
 M2 M2_run0 /n/regal/rubin_lab/fprice/Rundir/TCl_Plate2_r1/All_Reads/Fastq/TCL_Plate2_r1_S0.R1.fastq.gz /n/regal/rubin_lab/fprice/Rundir/TCl_Plate2_r1/All_Reads/Fastq/TCL_Plate2_r1_S0.R2.fastq.gz
 M3 M3_run0 /n/regal/rubin_lab/fprice/Rundir/TCl_Plate3_r1/All_Reads/Fastq/TCL_Plate3_r1_S0.R1.fastq.gz /n/regal/rubin_lab/fprice/Rundir/TCl_Plate3_r1/All_Reads/Fastq/TCL_Plate3_r1_S0.R2.fastq.gz
 M4 M4_run0 /n/regal/rubin_lab/fprice/Rundir/TCl_Plate4_r1/All_Reads/Fastq/TCL_Plate4_r1_S0.R1.fastq.gz /n/regal/rubin_lab/fprice/Rundir/TCl_Plate4_r1/All_Reads/Fastq/TCL_Plate4_r1_S0.R2.fastq.gz
-M5 M5_run0 /n/regal/rubin_lab/fprice/Rundir/TCl_Plate4_r1/All_Reads/Fastq/TCL_Plate4_r2_S0.R1.fastq.gz /n/regal/rubin_lab/fprice/Rundir/TCl_Plate4_r1/All_Reads/Fastq/TCL_Plate4_r2_S0.R2.fastq.gz
+M4 M4_run1 /n/regal/rubin_lab/fprice/Rundir/TCl_Plate4_r1/All_Reads/Fastq/TCL_Plate4_r2_S0.R1.fastq.gz /n/regal/rubin_lab/fprice/Rundir/TCl_Plate4_r1/All_Reads/Fastq/TCL_Plate4_r2_S0.R2.fastq.gz
