@@ -173,7 +173,7 @@ class SbatchController:
 			print('Submitting ' + shell_script + ' to sbatch')
 			
 		script_basename = os.path.basename(shell_script)
-		cmd = 'sbatch -p ' + self.queue + ' -e ' + shell_script + '.stderr -o ' + shell_script + '.stdout' ***
+		cmd = 'sbatch -p ' + self.queue + ' -e ' + shell_script + '.stderr -o ' + shell_script + '.stdout'
 
 		if self.memory:
 			cmd = cmd + ' --mem ' + str(self.memory*1024)
