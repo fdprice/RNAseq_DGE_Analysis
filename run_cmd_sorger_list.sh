@@ -1,3 +1,4 @@
+srun --pty -p interact -t 0-6:00 --mem 1000 -n 1 -N 1 /bin/bash
 
 # guarantee our consistent defaults
 source new-modules.sh
