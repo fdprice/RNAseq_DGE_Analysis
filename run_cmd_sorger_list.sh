@@ -1,4 +1,14 @@
-srun --pty -p interact -t 0-6:00 --mem 1000 -n 1 -N 1 /bin/bash
+#!/bin/bash
+#
+#SBATCH -p general                # partition (queue)
+#SBATCH -N 1                      # number of nodes
+#SBATCH -n 1                      # number of cores
+#SBATCH --mem 1000                 # memory pool for all cores
+#SBATCH -t 0-6:00                 # time (D-HH:MM)
+#SBATCH -o slurm.%N.%j.out        # STDOUT
+#SBATCH -e slurm.%N.%j.err        # STDERR
+#SBATCH --mail-type=END,FAIL      # notifications for job done & fail
+#SBATCH --mail-user=feodor_price@harvard.edu # send-to address
 
 # guarantee our consistent defaults
 source new-modules.sh
