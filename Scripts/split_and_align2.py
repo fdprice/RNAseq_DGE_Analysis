@@ -101,7 +101,7 @@ with open_fastq_or_gz(r1_fastq) as r1_file, open_fastq_or_gz(r2_fastq) as r2_fil
     	cmd_to_add = write_fastq_and_return_align_cmd(alignment_dir, sample_id, subsample_id, read_count, buf, reference_prefix)
     	cmd_list.append(cmd_to_add)
 		
-    controller = SbatchController.SbatchController(cmd_list, queue=sbatch_queue, memory=sbatch_memreq, cmds_per_node=1) # , mount_test=alignment_dir) ### removed mount_test as argument
+    controller = SbatchController.SbatchController(cmd_list, queue=sbatch_queue, memory=sbatch_memreq, cmds_per_node=1, see = True) # , mount_test=alignment_dir) ### removed mount_test as argument
 
     controller.run_slurm_submission()
 
