@@ -159,6 +159,7 @@ else:
 
 if not debug_flag:
     controller.clean_logs()
+    
 #
 ## run merge and count
 #
