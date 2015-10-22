@@ -19,7 +19,7 @@ class SbatchController:
 	test_controller.clean_logs()
 	
 	"""
-	def __init__(self, command_list, queue = 'serial_requeue', cmds_per_node = 50, memory = False, mount_test = False, max_nodes=250, see = False, project = False):
+	def __init__(self, command_list, queue = 'serial_requeue', cmds_per_node = 50, memory = False, mount_test = False, max_nodes=250, see = False, project = False, debug_flag=0):
 		self.command_list = command_list
 		self.queue = queue
 		self.cmds_per_node = cmds_per_node
@@ -32,6 +32,7 @@ class SbatchController:
 		self.job_id_to_submission_time = {}
 		self.see = see  ## for debugging, enables extra messages
 		self.project = project
+		self.debug_flag = debug_flag
 		
 		self.RESORT_TO_POLLING_TIME = 900
 		
@@ -67,6 +68,7 @@ class SbatchController:
 		self.monitor_dir = self.log_dir_name + '/monitor'
 		for dir in [self.command_dir, self.retvals_dir, self.monitor_dir]:
 			os.makedirs(dir)
+
 		
 	def get_command_list(self):
 		return self.command_list
@@ -182,9 +184,9 @@ class SbatchController:
 			cmd = cmd + ' --mem ' + str(self.memory*1024)
 		
 		if self.queue == 'short':
-				cmd = cmd + ' -t 0-06:00'
+				cmd = cmd + ' -t 0-04:00'
 		if self.queue == 'long':
-				cmd = cmd + ' -t 0-12:00'
+				cmd = cmd + ' -t 0-16:00'
 				
 		#if self.project:
 		#	cmd = cmd + ' -P ' + self.project

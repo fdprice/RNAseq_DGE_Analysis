@@ -42,6 +42,7 @@ if args.long_slurm_queue:
 	sbatch_queue = args.long_slurm_queue
 
 sbatch_memreq = 32		################# previously 4
+debug_flag = 1          # whether or not to show debug messages
 
 bindir = os.path.abspath(os.path.dirname(sys.argv[0]))		# locate scripts directory
 reference_dir =  os.path.join(bindir, "../Reference")		# locate "Reference" dir relative to scripts dir 
@@ -71,7 +72,8 @@ ercc_fasta = os.path.join(reference_dir, "ERCC92.fa")
 
 # Error handling:  Check for existence of Reference directory
 if not os.path.exists(reference_dir):
-    raise Exception("\nFatal error: " + reference_dir + " not found.\n\"Reference\" directory must exist within" + bindir + "\n")
+    raise Exception("\nFatal error: " + reference_dir + 
+        " not found.\n\"Reference\" directory must exist within" + bindir + "\n")
 
 # Error handling:  Check for existence of alignment directory.  Create directory if not found.
 if not os.path.exists(alignment_dir):
@@ -98,12 +100,15 @@ reference_prefix = reference_prefix_map[species]
 sym2ref = sym2ref[species]
 barcodes = barcodes[barcode_plate]
 
+#
 ## run split and align
+#
 
 # Construct command for split_and_align job
 def sa_cmd(sample_id, subsample_id, r1_path, r2_path, alignment_dir, reference_prefix, short_queue):
 	split_call = "".join([bindir, "/split_and_align2.py"])
-	return " ".join([pythoncmd, split_call, sample_id, subsample_id, r1_path, r2_path, alignment_dir, reference_prefix, short_queue])
+	return " ".join([pythoncmd, split_call, sample_id, subsample_id, r1_path, 
+	    r2_path, alignment_dir, reference_prefix, short_queue])
 
 # Read though sample map and launch split_and_align jobs for each entry
 cmd_list = list()
@@ -129,22 +134,34 @@ with open(sample_map_filename, "rU") as sample_map:
 
         r1_path = os.path.join(os.path.dirname(sample_map_filename), r1_filename)
         r2_path = os.path.join(os.path.dirname(sample_map_filename), r2_filename)
-        cmd_list.append(sa_cmd(sample_id, subsample_id, r1_path, r2_path, alignment_dir, reference_prefix, short_queue))
+        cmd_list.append(sa_cmd(sample_id, subsample_id, r1_path, r2_path, alignment_dir, 
+            reference_prefix, short_queue))
 
-controller = SbatchController.SbatchController(cmd_list, queue=sbatch_queue, memory=sbatch_memreq, cmds_per_node=1, see=True) # , mount_test=alignment_dir) ### removed mount_test as argument
+# print out status and debug messages
+print('#### Split and Align ####')
+print("%s command(s) to run" % len(cmd_list))
+if debug_flag:
+    for index, item in enumerate(cmd_list):
+        print(index, item)
+
+controller = SbatchController.SbatchController(cmd_list, queue=sbatch_queue, 
+    memory=sbatch_memreq, cmds_per_node=1, see=True, debug_flag=debug_flag) # , mount_test=alignment_dir) ### removed mount_test as argument
 controller.run_slurm_submission()
 
 failed_cmds = controller.get_failed_cmds()
 if failed_cmds:
 	for failed in failed_cmds:
-		print(failed[0] + ' in job ' + str(failed[1]) + ' failed with ret ' + str(failed[2]) + ', see ' + str(failed[3]) + '.stdout and ' + str(failed[3]) + '.stderr')
+		print(failed[0] + ' in job ' + str(failed[1]) + ' failed with ret ' 
+		    + str(failed[2]) + ', see ' + str(failed[3]) + '.stdout and ' + str(failed[3]) + '.stderr')
 	raise Exception('Ending process due to failed alignment commands.')	
 else:
 	print('No failed aligment commands, continuing.')
 
-controller.clean_logs()
-
+if not debug_flag:
+    controller.clean_logs()
+#
 ## run merge and count
+#
 
 sbatch_memreq = 80   ################# previously 8
 
@@ -162,8 +179,17 @@ with open(sample_map_filename, "rU") as sm_file:
     for sample_id in set([line.split()[0] for line in sm_file]):
         merge_cmd_list.append(mc_cmd(sample_id, sym2ref, ercc_fasta, barcodes, alignment_dir, dge_dir, loose_barcodes))
 
-controller2 = SbatchController.SbatchController(merge_cmd_list, queue=sbatch_queue, memory=sbatch_memreq, cmds_per_node=1) # , mount_test=dge_dir)  ### removed mount_test as argument
+# print out status and potential debug messages
+print('#### Merge and Count ####')
+print("%s command(s) to run" % len(merge_cmd_list))
+if debug_flag:
+    for index, item in enumerate(merge_cmd_list):
+        print(index, item)
+
+
+controller2 = SbatchController.SbatchController(merge_cmd_list, queue=sbatch_queue, memory=sbatch_memreq, cmds_per_node=1, debug_flag=debug_flag) # , mount_test=dge_dir)  ### removed mount_test as argument
 controller2.run_slurm_submission()
+
 
 failed_cmds = controller2.get_failed_cmds()
 success = False
@@ -174,10 +200,10 @@ else:
 	print('No failed merge and count commands, finished.')
 	success = True
 
-if success:
+if success and not debug_flag:
 	controller2.clean_logs()
 	
-	if cleanup:
+	if cleanup and not debug_flag:
 		for align_file in [f for f in os.listdir(alignment_dir) if (f.endswith(".fastq") or f.endswith(".sam"))]:
 			aligned_path = os.path.join(alignment_dir, align_file)
 			os.remove(aligned_path)

@@ -14,6 +14,7 @@ bwa_aln_flags = "-l 24"
 batch_size = 5000000
 r1_length = 16
 #r2_length = 33
+debug_flag = 1
 
 ## Helpers
 
@@ -73,6 +74,7 @@ sample_id, subsample_id, r1_fastq, r2_fastq, alignment_dir, reference_prefix, sb
 
 # Read through R1 and R2 fastq files in parallel, add R1 barcode to R2 name, and launch batched
 # BWA alignments via slurm with output written to alignment_dir
+print('### Reading and re-writing FASTQ data ###')
 with open_fastq_or_gz(r1_fastq) as r1_file, open_fastq_or_gz(r2_fastq) as r2_file:
     read_count = 0
     buf = list()
@@ -100,8 +102,16 @@ with open_fastq_or_gz(r1_fastq) as r1_file, open_fastq_or_gz(r2_fastq) as r2_fil
     if len(buf) > 0:
     	cmd_to_add = write_fastq_and_return_align_cmd(alignment_dir, sample_id, subsample_id, read_count, buf, reference_prefix)
     	cmd_list.append(cmd_to_add)
-		
-    controller = SbatchController.SbatchController(cmd_list, queue=sbatch_queue, memory=sbatch_memreq, cmds_per_node=1, see = True) # , mount_test=alignment_dir) ### removed mount_test as argument
+	
+	# print out status and debug messages
+    print('#### FASTQs written. Starting Alignments Calls ####')
+    print("%s command(s) to run" % len(cmd_list))
+    if debug_flag:
+        for index, item in enumerate(cmd_list):
+            print(index, item)
+
+	
+    controller = SbatchController.SbatchController(cmd_list, queue=sbatch_queue, memory=sbatch_memreq, cmds_per_node=1, see = True, debug_flag=debug_flag ) # , mount_test=alignment_dir) ### removed mount_test as argument
 
     controller.run_slurm_submission()
 
@@ -113,4 +123,5 @@ with open_fastq_or_gz(r1_fastq) as r1_file, open_fastq_or_gz(r2_fastq) as r2_fil
     else:
 	print('No failed commands.')
 
-    controller.clean_logs()
+    if not debug_flag:
+        controller.clean_logs()
