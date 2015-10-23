@@ -82,7 +82,7 @@ if not os.path.exists(alignment_dir):
 
 # Error handling:  Check for existence of dge_dir directory.  Create directory if not found.
 if not os.path.exists(dge_dir):
-    print ("creating " + dge_dir + " dge directory\n")
+    print ("creating " + dge_dir + " DGE directory\n")
     os.makedirs(dge_dir)
 
 #  Error handling:  Check for existence of sample_map_filename
