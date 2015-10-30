@@ -30,7 +30,7 @@ def open_fastq_or_gz(filename):
         return open(filename[:-3], "rU")
     raise IOError, "Unknown file: " + filename
 
-# Contruct slurm sbatch command for BWA alignment job
+# Contruct SLURM sbatch command for BWA alignment job
 # def sbatch_bwa_cmd(fastq_path, reference_prefix, alignment_dir):
 #     return " ".join(["sbatch", "-q", sbatch_queue, "-o",  os.path.join(alignment_dir, "bwa.sbatch"), "-J bwa", \
 #                     "-R", sbatch_memreq, "-R", sbatch_ioreq, \
@@ -42,7 +42,7 @@ def bwa_cmd(fastq_path, reference_prefix, alignment_dir):  ## separated bwa from
                     reference_prefix, "-", fastq_path, ">", ".".join([fastq_path, "sam"])])
 
 
-# Write fastq batch and submit BWA alignment job to slurm
+# Write fastq batch and submit BWA alignment job to SLURM
 # def write_fastq_and_align(alignment_dir, sample_id, subsample_id, read_count, name_seq_qual_list, reference_prefix):
 #     fastq_path = os.path.join(alignment_dir, ".".join([sample_id, subsample_id, str(read_count), "fastq"]))
 #     with open(fastq_path, "w") as out:
@@ -73,7 +73,7 @@ if len(sys.argv) != 8:
 sample_id, subsample_id, r1_fastq, r2_fastq, alignment_dir, reference_prefix, sbatch_queue = sys.argv[1:]
 
 # Read through R1 and R2 fastq files in parallel, add R1 barcode to R2 name, and launch batched
-# BWA alignments via slurm with output written to alignment_dir
+# BWA alignments via SLURM with output written to alignment_dir
 print('### Reading and re-writing FASTQ data ###')
 with open_fastq_or_gz(r1_fastq) as r1_file, open_fastq_or_gz(r2_fastq) as r2_file:
     read_count = 0
@@ -117,11 +117,11 @@ with open_fastq_or_gz(r1_fastq) as r1_file, open_fastq_or_gz(r2_fastq) as r2_fil
 
     failed_cmds = controller.get_failed_cmds()
     if failed_cmds:
-	for failed in failed_cmds:
-		print(failed[0] + ' in job ' + str(failed[1]) + ' failed with ret ' + str(failed[2]) + ', see ' + str(failed[3]) + '.stdout and ' + str(failed[3]) + '.stderr')
-	raise Exception('Ending process due to failed commands.')
+        for failed in failed_cmds:
+            print(failed[0] + ' in job ' + str(failed[1]) + ' failed with ret ' + str(failed[2]) + ', see ' + str(failed[3]) + '.stdout and ' + str(failed[3]) + '.stderr')
+        raise Exception('Ending process due to failed commands.')
     else:
-	print('No failed commands.')
+        print('No failed commands.')
 
     if not debug_flag:
         controller.clean_logs()
