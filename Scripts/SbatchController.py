@@ -19,7 +19,7 @@ class SbatchController:
 	test_controller.clean_logs()
 	
 	"""
-	def __init__(self, command_list, queue = 'serial_requeue', cmds_per_node = 50, memory = False, mount_test = False, max_nodes=250, see = False, project = False, debug_flag=0):
+	def __init__(self, command_list, queue = 'general', cmds_per_node = 50, memory = False, mount_test = False, max_nodes=250, see = False, project = False, debug_flag=0):
 		self.command_list = command_list
 		self.queue = queue
 		self.cmds_per_node = cmds_per_node
@@ -178,7 +178,7 @@ class SbatchController:
 		# for now, hard-coding partition name. we only care about the partition from the calling code
 		#   in order to get the time length, not the partition name
 		#cmd = 'sbatch -p ' + self.queue + ' -e ' + shell_script + '.stderr -o ' + shell_script + '.stdout'
-		cmd = 'sbatch -p serial_requeue -e ' + shell_script + '.stderr -o ' + shell_script + '.stdout --constraint="holyib"'
+		cmd = 'sbatch -p general -e ' + shell_script + '.stderr -o ' + shell_script + '.stdout --constraint="holyib"'
 
 		if self.memory:
 			cmd = cmd + ' --mem ' + str(self.memory*1024)
